@@ -70,34 +70,42 @@ namespace Authontcation_Test.Controllers
 
             //Generate Token
 
-            var token = GenerateJwtToken(User);
+            var token = await GenerateJwtToken(User);
 
             return Ok(new { token });
 
         }
 
-        private string GenerateJwtToken(ApplecationUser user)
+        private async Task<string> GenerateJwtToken(ApplecationUser user)
         {
-            var claims = new[]
+            var userRoles = await userManager.GetRolesAsync(user);
+
+            var claims = new List<Claim>
+    {
+        new Claim(ClaimTypes.NameIdentifier, user.Id),
+        new Claim(ClaimTypes.Name, user.UserName),
+        new Claim(ClaimTypes.Email, user.Email)
+    };
+
+            foreach (var role in userRoles)
             {
-            new Claim(ClaimTypes.NameIdentifier, user.Id),
-            new Claim(ClaimTypes.Name, user.UserName),
-            new Claim(ClaimTypes.Email, user.Email)
-            };
+                claims.Add(new Claim(ClaimTypes.Role, role));
+            }
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
-           issuer: configuration["Jwt:Issuer"],
-           audience: null,
-           claims: claims,
-           expires: DateTime.Now.AddHours(1),
-           signingCredentials: creds
+               issuer: configuration["Jwt:Issuer"],
+               audience: null,
+               claims: claims,
+               expires: DateTime.Now.AddHours(1),
+               signingCredentials: creds
             );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+
 
 
         [Authorize]

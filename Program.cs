@@ -99,7 +99,7 @@ namespace Authontcation_Test
         { jwtSecurityScheme, Array.Empty<string>() }
     });
             });
-
+           
 
             var app = builder.Build();
 
@@ -115,11 +115,15 @@ namespace Authontcation_Test
 
             app.UseAuthentication();
             app.UseAuthorization();
-
-
             app.MapControllers();
+          
+
 
             app.Run();
+
+            
+
+
         }
     }
 }
